@@ -209,14 +209,17 @@ class TreeFilter(object):
         # TODO: what about tags?
         return self.rewrite_root_commit(sha1)
 
+    def rewrite_root_objects(self, ids):
+        return asyncio.gather(*[
+            asyncio.ensure_future(self.rewrite_root(id.hex))
+            for id in ids
+        ])
+
     @cached
     async def rewrite_root_commit(self, sha1):
         commit = self.repo[sha1]
         ids = [commit.tree_id] + commit.parent_ids
-        tree, *parents = await asyncio.gather(*[
-            asyncio.ensure_future(self.rewrite_root(id.hex))
-            for id in ids
-        ])
+        tree, *parents = await self.rewrite_root_objects(ids)
         return await self.create_commit(
             Signature(commit.author), Signature(commit.committer),
             commit.message, tree, parents)
