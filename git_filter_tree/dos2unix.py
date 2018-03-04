@@ -3,11 +3,11 @@ History rewrite helper script: Convert files to unix line endings, and remove
                                trailing spaces from them, in history
 
 Usage:
-    git-filter-tree dos2unix EXT [-- REFS]
+    git-filter-tree dos2unix REGEX [-- REFS]
 
 Arguments:
 
-    EXT         Filename extension          [default: .gz]
+    REGEX       Filename regular expression
     REFS        git-rev-list options
 """
 
@@ -20,9 +20,9 @@ TRAILING_WS = re.compile(br'[^\S\n]\n')
 
 class Dos2Unix(TreeFilter):
 
-    def __init__(self, ext):
+    def __init__(self, regex):
         super().__init__()
-        self.ext = ext
+        self.regex = re.compile(regex)
 
     # rewrite depends only on the object payload and name:
     def depends(self, obj):
@@ -31,7 +31,7 @@ class Dos2Unix(TreeFilter):
     @cached
     async def rewrite_file(self, obj):
         mode, kind, sha1, name = obj
-        if name.endswith(self.ext):
+        if self.regex.search(name):
             sha1 = await self.convertToUnix(obj)
         return [(mode, kind, sha1, name)]
 
