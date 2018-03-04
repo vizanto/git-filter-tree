@@ -82,6 +82,23 @@ while ensuring that the file ends with a newline. Usage:
 
     python3 git_tree_filter dos2unix [EXT] -- --branches --tags
 
+prepend_root
+~~~~~~~~~~~~
+
+This module is a helper to prepend a new commit to every initial commit and
+replace any future files (tree items) with the new root contents.
+
+It was first used to add `.gitattributes` in a future dated commit after
+importing a multi-year old history from Mercurial.
+
+.. code-block:: bash
+
+    git checkout --orphan newroot
+    echo 'text=auto' > .gitattributes
+    git add .gitattributes
+    git commit -m 'New initial commit'
+    python3 git_tree_filter prepend_root newroot -- master
+
 
 .. References:
 
